@@ -1,25 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import { MainContainer, AuthContainer } from './screens'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from "react-redux"
+import { firebase } from './utils'
+import { loadUserData } from './screens/User/actions'
+import { Grid } from '@mui/material'
+import { display } from '@mui/system'
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const userData = useSelector(state => state.appReducer.user)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    const authListener = firebase.auth.onAuthStateChanged(user => {
+    dispatch(loadUserData(user))
+    })
+
+    return() => {
+      authListener()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (userData) {
+    return (
+      <>
+        {  userData.accessControl?.situation === "Aprovado" ? <MainContainer/>:<AuthContainer/>}
+      </>
+    );
+  }
+
+  return <h1>Carregando...</h1>
 }
 
 export default App;
